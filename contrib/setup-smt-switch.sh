@@ -76,7 +76,7 @@ if [ ! -d "$DEPS/smt-switch" ]; then
         ./contrib/setup-bitwuzla.sh
     fi
     # pass bison/flex directories from smt-switch perspective
-    ./configure.sh --btor --cvc5 $CONF_OPTS --prefix=local --static --smtlib-reader --bison-dir=../bison/bison-install --flex-dir=../flex/flex-install
+    ./configure.sh --btor --cvc5 $CONF_OPTS --prefix=local --smtlib-reader --bison-dir=../bison/bison-install --flex-dir=../flex/flex-install
     cd build
     make -j$(nproc)
     make test
