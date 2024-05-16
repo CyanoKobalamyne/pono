@@ -31,7 +31,12 @@
 *.out
 *.app
 
+# Directories
 build
 deps
+local
 __pycache__
 .cache
+
+# Generated
+compile_commands.json
