@@ -18,7 +18,7 @@
 
 
 extern "C" {
-#include "btor2parser/btor2parser.h"
+#include "btor2parser.h"
 }
 
 #include <stdio.h>
