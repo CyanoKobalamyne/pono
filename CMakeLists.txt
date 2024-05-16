@@ -19,6 +19,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 add_definitions(-DPONO_SRC_DIR=${PROJECT_SOURCE_DIR})
 
@@ -66,9 +67,6 @@ message("-- FOUND FLEX INCLUDE DIRS: ${FLEX_INCLUDE_DIRS}")
 # TODO: Use find_package
 # find package
 #list(APPEND CMAKE_PREFIX_PATH "${PROJECT_SOURCE_DIR}/smt-switch")
-
-# rely on cmake modules from smt-switch (required anyway)
-set(CMAKE_MODULE_PATH ${SMT_SWITCH_DIR}/cmake)
 
 find_package(GMP REQUIRED)
 
