@@ -300,6 +300,9 @@ add_subdirectory(tests)
 
 add_executable(pono-bin "${PROJECT_SOURCE_DIR}/pono.cpp")
 set_target_properties(pono-bin PROPERTIES OUTPUT_NAME pono)
+if(NOT "${PONO_STATIC_EXEC}" STREQUAL "YES")
+  set_target_properties(pono-bin PROPERTIES INSTALL_RPATH "\\\${ORIGIN}/../lib")
+endif()
 
 target_include_directories(pono-bin PUBLIC
   "${PROJECT_SOURCE_DIR}/utils"
@@ -316,6 +319,19 @@ if ("${PONO_STATIC_EXEC}" STREQUAL "YES")
 endif()
 
 # install smt-switch
+if(NOT "${PONO_STATIC_EXEC}" STREQUAL "YES")
+  install(FILES "${SMT_SWITCH_DIR}/local/lib/libsmt-switch.${LIB_EXT}" DESTINATION lib)
+  install(FILES "${SMT_SWITCH_DIR}/local/lib/libsmt-switch-btor.${LIB_EXT}" DESTINATION lib)
+  install(FILES "${SMT_SWITCH_DIR}/local/lib/libsmt-switch-cvc5.${LIB_EXT}" DESTINATION lib)
+  if (WITH_BITWUZLA)
+    install(FILES "${SMT_SWITCH_DIR}/local/lib/libsmt-switch-bitwuzla.${LIB_EXT}" DESTINATION lib)
+  endif()
+  if (WITH_MSAT)
+    install(FILES "${SMT_SWITCH_DIR}/local/lib/libsmt-switch-msat.${LIB_EXT}" DESTINATION lib)
+  endif()
+endif()
+
+# install pono
 install(TARGETS pono-lib DESTINATION lib)
 install(TARGETS pono-bin DESTINATION bin)
 
