@@ -4,8 +4,8 @@
 # GMP_LIBRARIES - Libraries needed to use GMP
 
 find_path(GMP_INCLUDE_DIR NAMES gmp.h gmpxx.h)
-find_library(GMP_LIBRARIES NAMES gmp)
-find_library(GMPXX_LIBRARIES NAMES gmpxx)
+find_library(GMP_LIBRARIES NAMES libgmp.a)
+find_library(GMPXX_LIBRARIES NAMES libgmpxx.a)
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(GMP DEFAULT_MSG GMP_INCLUDE_DIR GMP_LIBRARIES)
