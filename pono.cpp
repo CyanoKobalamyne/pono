@@ -23,6 +23,9 @@
 #endif
 
 #include "smt-switch/boolector_factory.h"
+#ifdef WITH_BITWUZLA
+#include "smt-switch/bitwuzla_factory.h"
+#endif
 #ifdef WITH_MSAT
 #include "smt-switch/msat_factory.h"
 #endif
