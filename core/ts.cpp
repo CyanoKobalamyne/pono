@@ -38,8 +38,10 @@ void swap(TransitionSystem & ts1, TransitionSystem & ts2)
   std::swap(ts1.named_terms_, ts2.named_terms_);
   std::swap(ts1.term_to_name_, ts2.term_to_name_);
   std::swap(ts1.state_updates_, ts2.state_updates_);
+  std::swap(ts1.no_state_updates_, ts2.no_state_updates_);
   std::swap(ts1.next_map_, ts2.next_map_);
   std::swap(ts1.curr_map_, ts2.curr_map_);
+  std::swap(ts1.next_suffix_, ts2.next_suffix_);
   std::swap(ts1.functional_, ts2.functional_);
   std::swap(ts1.deterministic_, ts2.deterministic_);
   std::swap(ts1.constraints_, ts2.constraints_);
@@ -88,6 +90,10 @@ TransitionSystem::TransitionSystem(const TransitionSystem & other_ts,
     next_statevars_.insert(transfer(v));
   }
 
+  for (const auto & v : other_ts.no_state_updates_) {
+    no_state_updates_.insert(transfer(v));
+  }
+
   for (const auto & elem : other_ts.named_terms_) {
     named_terms_[elem.first] = transfer(elem.second);
   }
@@ -123,6 +129,8 @@ TransitionSystem::TransitionSystem(const TransitionSystem & other_ts,
   for (const auto & e : other_ts.constraints_) {
     constraints_.push_back({ transfer_as(e.first, BOOL), e.second });
   }
+
+  next_suffix_ = other_ts.next_suffix_;
   functional_ = other_ts.functional_;
   deterministic_ = other_ts.deterministic_;
 }
@@ -138,8 +146,10 @@ bool TransitionSystem::operator==(const TransitionSystem & other) const
           named_terms_ == other.named_terms_ &&
           term_to_name_ == other.term_to_name_ &&
           state_updates_ == other.state_updates_ &&
+          no_state_updates_ == other.no_state_updates_ &&
           next_map_ == other.next_map_ &&
           curr_map_ == other.curr_map_ &&
+          next_suffix_ == other.next_suffix_ &&
           functional_ == other.functional_ &&
           deterministic_ == other.deterministic_ &&
           constraints_ == other.constraints_);
@@ -190,6 +200,8 @@ void TransitionSystem::assign_next(const Term & state, const Term & val)
   }
 
   state_updates_[state] = val;
+  auto erased = no_state_updates_.erase(state);
+  assert(erased);
   trans_ = solver_->make_term(
       And, trans_, solver_->make_term(Equal, next_map_.at(state), val));
 
@@ -284,7 +296,7 @@ Term TransitionSystem::make_statevar(const string name, const Sort & sort)
   deterministic_ = false;
 
   Term state = solver_->make_symbol(name, sort);
-  Term next_state = solver_->make_symbol(name + ".next", sort);
+  Term next_state = solver_->make_symbol(name + next_suffix_, sort);
   add_statevar(state, next_state);
   return state;
 }
@@ -372,6 +384,7 @@ void TransitionSystem::add_statevar(const Term & cv, const Term & nv)
   }
 
   statevars_.insert(cv);
+  no_state_updates_.insert(cv);
   next_statevars_.insert(nv);
   next_map_[cv] = nv;
   curr_map_[nv] = cv;
@@ -528,11 +541,14 @@ void TransitionSystem::rebuild_trans_based_on_coi(
   }
 
   smt::UnorderedTermMap reduced_state_updates;
+  no_state_updates_.clear();
   for (const auto & var : state_vars_in_coi) {
     const auto & elem = state_updates_.find(var);
     if (elem != state_updates_.end()) {
       Term next_func = elem->second;
       reduced_state_updates[var] = next_func;
+    } else {
+      no_state_updates_.insert(var);
     }
   }
   state_updates_ = reduced_state_updates;
@@ -635,6 +651,7 @@ void TransitionSystem::drop_state_updates(const TermVec & svs)
       throw PonoException("Got non-state var in drop_state_updates");
     }
     state_updates_.erase(sv);
+    no_state_updates_.insert(sv);
   }
 
   // now rebuild trans

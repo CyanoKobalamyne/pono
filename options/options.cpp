@@ -45,6 +45,7 @@ enum optionIndex
   CLK,
   SMT_SOLVER,
   LOGGING_SMT_SOLVER,
+  PRINTING_SMT_SOLVER,
   NO_IC3_PREGEN,
   NO_IC3_INDGEN,
   IC3_GEN_MAX_ITER,
@@ -181,7 +182,7 @@ const option::Descriptor usage[] = {
     "",
     "smt-solver",
     Arg::NonEmpty,
-    "  --smt-solver \tSMT Solver to use: btor, msat, or cvc5." },
+    "  --smt-solver \tSMT Solver to use: btor, bzla, msat, yices2, or cvc5." },
   { LOGGING_SMT_SOLVER,
     0,
     "",
@@ -191,6 +192,14 @@ const option::Descriptor usage[] = {
     "guarantees the exact term structure that was created. Good "
     "for avoiding term rewriting at the API level or sort aliasing. "
     "(default: false)" },
+  { PRINTING_SMT_SOLVER,
+    0,
+    "",
+    "printing-smt-solver",
+    Arg::None,
+    "  --printing-smt-solver \tDump all SMT queries to standard error output "
+    "in SMT-LIB format while solving. Uses smt-switch's create_printing_solver "
+    "function. (default: false)" },
   { WITNESS,
     0,
     "",
@@ -709,10 +718,14 @@ ProverResult PonoOptions::parse_and_set_options(int argc,
         case SMT_SOLVER: {
           if (opt.arg == std::string("btor")) {
             smt_solver_ = smt::BTOR;
+          } else if (opt.arg == std::string("bzla")) {
+            smt_solver_ = smt::BZLA;
           } else if (opt.arg == std::string("cvc5")) {
             smt_solver_ = smt::CVC5;
           } else if (opt.arg == std::string("msat")) {
             smt_solver_ = smt::MSAT;
+          } else if (opt.arg == std::string("yices2")) {
+            smt_solver_ = smt::YICES2;
           } else {
             throw PonoException("Unknown solver: " + std::string(opt.arg));
             break;
@@ -720,6 +733,7 @@ ProverResult PonoOptions::parse_and_set_options(int argc,
           break;
         }
         case LOGGING_SMT_SOLVER: logging_smt_solver_ = true; break;
+        case PRINTING_SMT_SOLVER: printing_smt_solver_ = true; break;
         case WITNESS: witness_ = true; break;
         case STATICCOI: static_coi_ = true; break;
         case SHOW_INVAR: show_invar_ = true; break;

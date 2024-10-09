@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 DEPS=$DIR/../deps
@@ -60,7 +61,6 @@ if [ ! -d "$DEPS/mathsat" ]; then
 
 else
     echo "$DEPS/mathsat already exists. If you want to re-download, please remove it manually."
-    exit 1
 fi
 
 if [ -f $DEPS/mathsat/lib/libmathsat.a ] ; then \

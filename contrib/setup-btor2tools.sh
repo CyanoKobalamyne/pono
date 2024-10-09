@@ -1,6 +1,7 @@
 #!/bin/bash
+set -e
 
-BTOR2TOOLS_VERSION=9831f9909fb283752a3d6d60d43613173bd8af42
+BTOR2TOOLS_VERSION=ff44a21e113667f4cb27dbf96ee46b95c612caf9
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 DEPS=$DIR/../deps
@@ -9,7 +10,7 @@ mkdir -p $DEPS
 
 if [ ! -d "$DEPS/btor2tools" ]; then
     cd $DEPS
-    git clone --depth 1 https://github.com/Boolector/btor2tools.git btor2tools
+    git clone https://github.com/Boolector/btor2tools.git btor2tools
     cd btor2tools
     git checkout -f $BTOR2TOOLS_VERSION
     CFLAGS="-fPIC" ./configure.sh --static
@@ -29,4 +30,3 @@ else
     echo "Please see their github page for installation instructions: https://github.com/Boolector/btor2tools.git"
     exit 1
 fi
-

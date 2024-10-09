@@ -32,19 +32,17 @@ class TransitionSystem
    *  it supports the most theories and doesn't rewrite-on-the-fly or alias
    * sorts
    *  this makes it a great candidate for representing the TransitionSystem */
-  TransitionSystem()
-      : solver_(smt::Cvc5SolverFactory::create(false)),
-        init_(solver_->make_term(true)),
-        trans_(solver_->make_term(true)),
-        functional_(false),
-        deterministic_(false)
+  TransitionSystem() : TransitionSystem(smt::Cvc5SolverFactory::create(false))
   {
   }
 
-  TransitionSystem(const smt::SmtSolver & s)
+  TransitionSystem(
+      const smt::SmtSolver & s,
+      const std::string & next_state_suffix = ".pono_generated__next")
       : solver_(s),
         init_(s->make_term(true)),
         trans_(s->make_term(true)),
+        next_suffix_(next_state_suffix),
         functional_(false),
         deterministic_(false)
   {
@@ -69,7 +67,7 @@ class TransitionSystem
    */
   TransitionSystem(const TransitionSystem & other_ts, smt::TermTranslator & tt);
 
-  virtual ~TransitionSystem(){};
+  virtual ~TransitionSystem() {};
 
   /** Equality comparison between TransitionSystems
    *  compares each member variable
@@ -250,6 +248,12 @@ class TransitionSystem
   const smt::UnorderedTermMap & state_updates() const
   {
     return state_updates_;
+  };
+
+  /* Returns the set of state variables with no update function. */
+  const smt::UnorderedTermSet & statevars_with_no_update() const
+  {
+    return no_state_updates_;
   };
 
   /* @return the named terms mapping */
@@ -506,6 +510,9 @@ class TransitionSystem
   // next state update function
   smt::UnorderedTermMap state_updates_;
 
+  // states with no next state update function
+  smt::UnorderedTermSet no_state_updates_;
+
   // maps states and inputs variables to next versions
   // note: the next state variables are only used
   //       on the left hand side of equalities in
@@ -514,6 +521,9 @@ class TransitionSystem
 
   // maps next back to curr
   smt::UnorderedTermMap curr_map_;
+
+  // Text appended to generate names for next-state variables.
+  std::string next_suffix_;
 
   // whether the TransitionSystem is functional
   bool functional_;

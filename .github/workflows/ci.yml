@@ -19,6 +19,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             cmake \
+            ninja-build \
             libgmp-dev \
             openjdk-8-jdk
 
@@ -26,21 +27,22 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           brew install \
+            ninja \
             gmp
 
-      # install previous version of setuptools as temporary fix
-      # see also recommendations here: https://github.com/pypa/setuptools/issues/3227
-      - name: Python Dependencies (macOS)
-        if: runner.os == 'macOS'
-        run: python3 -m pip install 'setuptools<61'
+      - name: Python Environment Setup
+        run: |
+          python3 -m venv ./.venv
+          echo "$PWD/.venv/bin" >> $GITHUB_PATH
 
       - name: Python Dependencies (all)
-        run: python3 -m pip install Cython pytest toml
+        run: python3 -m pip install Cython pytest pyparsing toml meson
 
       - name: Python Dependencies (all)
         run: python3 -m pip install scikit-build
 
       - name: Download MathSAT
+        if: runner.os != 'macOS'
         run: ./ci-scripts/setup-msat.sh --auto-yes
 
       - name: Setup Flex
@@ -52,12 +54,23 @@ jobs:
       - name: Setup Btor2Tools
         run: ./contrib/setup-btor2tools.sh
 
-      - name: Setup Smt-Switch
-        run: |
-          ./contrib/setup-smt-switch.sh --with-msat --python
-          python3 -m pip install -e ./deps/smt-switch/build/python
+      - name: Setup Smt-Switch (macOS)
+        if: runner.os == 'macOS'
+        run: ./contrib/setup-smt-switch.sh --python
 
-      - name: Configure
+      - name: Setup Smt-Switch (non-macOS)
+        if: runner.os != 'macOS'
+        run: ./contrib/setup-smt-switch.sh --with-msat --python
+
+      - name: Set up Python bindings for smt-switch
+        run: python3 -m pip install -e ./deps/smt-switch/build/python
+
+      - name: Configure (macOS)
+        if: runner.os == 'macOS'
+        run: ./configure.sh --debug --python
+
+      - name: Configure (non-macOS)
+        if: runner.os != 'macOS'
         run: ./configure.sh --with-msat --debug --python
 
       - name: Build

@@ -13,8 +13,10 @@ Configures the CMAKE build environment.
 -h, --help              display this message and exit
 --prefix=STR            install directory       (default: /usr/local/)
 --build-dir=STR         custom build directory  (default: build)
+--with-btor             build with Boolector  (default: off)
 --with-msat             build with MathSAT which has a custom non-BSD compliant license.  (default : off)
                         Required for interpolant based model checking
+--with-yices2           build with Yices2 which has a custom non-BSD compliant license (default : off)
 --with-msat-ic3ia       build with the open-source IC3IA implementation as a backend. (default: off)
 --with-coreir           build the CoreIR frontend (default: off)
 --with-coreir-extern    build the CoreIR frontend using an installation of coreir in /usr/local/lib (default: off)
@@ -23,6 +25,7 @@ Configures the CMAKE build environment.
 --static-lib            build a static library (default: shared)
 --static                build a static executable (default: dynamic); implies --static-lib
 --with-profiling        build with gperftools for profiling (default: off)
+--no-system-gtest       do not use system GTest sources; forces download (default: off)
 EOF
   exit 0
 }
@@ -35,7 +38,9 @@ die () {
 build_dir=build
 install_prefix=default
 build_type=default
+with_boolector=default
 with_msat=default
+with_yices2=default
 with_msat_ic3ia=default
 with_coreir=default
 with_coreir_extern=default
@@ -44,6 +49,7 @@ python=default
 lib_type=SHARED
 static_exec=NO
 with_profiling=default
+system_gtest=default
 
 buildtype=Release
 
@@ -71,7 +77,9 @@ do
                 *) build_dir=$(pwd)/$build_dir ;; # make absolute path
             esac
             ;;
+        --with-btor) with_boolector=ON;;
         --with-msat) with_msat=ON;;
+        --with-yices2) with_yices2=ON;;
         --with-msat-ic3ia) with_msat_ic3ia=ON;;
         --with-coreir) with_coreir=ON;;
         --with-coreir-extern) with_coreir_extern=ON;;
@@ -90,6 +98,7 @@ do
             lib_type=STATIC;
             ;;
         --with-profiling) with_profiling=ON;;
+        --no-system-gtest) system_gtest=no;;
         *) die "unexpected argument: $1";;
     esac
     shift
@@ -103,8 +112,14 @@ cmake_opts="-DCMAKE_BUILD_TYPE=$buildtype -DPONO_LIB_TYPE=${lib_type} -DPONO_STA
 [ $install_prefix != default ] \
     && cmake_opts="$cmake_opts -DCMAKE_INSTALL_PREFIX=$install_prefix"
 
+[ $with_boolector != default ] \
+    && cmake_opts="$cmake_opts -DWITH_BOOLECTOR=$with_boolector"
+
 [ $with_msat != default ] \
     && cmake_opts="$cmake_opts -DWITH_MSAT=$with_msat"
+
+[ $with_yices2 != default ] \
+    && cmake_opts="$cmake_opts -DWITH_YICES2=$with_yices2"
 
 [ $with_msat_ic3ia != default ] \
     && cmake_opts="$cmake_opts -DWITH_MSAT_IC3IA=$with_msat_ic3ia"
@@ -120,6 +135,9 @@ cmake_opts="-DCMAKE_BUILD_TYPE=$buildtype -DPONO_LIB_TYPE=${lib_type} -DPONO_STA
 
 [ $with_profiling != default ] \
     && cmake_opts="$cmake_opts -DWITH_PROFILING=$with_profiling"
+
+[ $system_gtest != default ] \
+    && cmake_opts="$cmake_opts -DSYSTEM_GTEST=$system_gtest"
 
 root_dir=$(pwd)
 
